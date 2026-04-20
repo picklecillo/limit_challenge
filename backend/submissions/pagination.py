@@ -5,7 +5,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
 
-class SubmissionPagination(PageNumberPagination):
+class TotalPageNumberPagination(PageNumberPagination):
     page_size = settings.REST_FRAMEWORK.get("PAGE_SIZE", 10)
 
     def get_paginated_response(self, data):

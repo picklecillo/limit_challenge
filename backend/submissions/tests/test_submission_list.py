@@ -2,7 +2,7 @@ import pytest
 from django.urls import reverse
 
 from submissions.models import Broker, Company, Note, Submission, TeamMember
-from submissions.pagination import SubmissionPagination
+from submissions.pagination import TotalPageNumberPagination
 
 
 
@@ -195,13 +195,13 @@ class TestSubmissionPagination:
         assert response.data["total_pages"] == 1
 
     def test_total_pages_multiple_pages(self, client, submission, broker, company, owner):
-        page_size = SubmissionPagination.page_size
+        page_size = TotalPageNumberPagination.page_size
         self._bulk_create(page_size, broker, company, owner)
         response = client.get(LIST_URL)
         assert response.data["total_pages"] == 2
 
     def test_second_page_returns_remaining_results(self, client, submission, broker, company, owner):
-        page_size = SubmissionPagination.page_size
+        page_size = TotalPageNumberPagination.page_size
         self._bulk_create(page_size, broker, company, owner)
         response = client.get(LIST_URL, {"page": 2})
         assert len(response.data["results"]) == 1
