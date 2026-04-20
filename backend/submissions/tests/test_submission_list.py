@@ -148,3 +148,14 @@ class TestSubmissionListFilter:
         response = client.get(LIST_URL)
         statuses = {item["status"] for item in response.data["results"]}
         assert statuses == {"new", "in_review"}
+
+    def test_filter_by_broker_id_returns_matching(self, client, submission, company, owner):
+        other_broker = Broker.objects.create(name="Other Brokerage")
+        Submission.objects.create(company=company, broker=other_broker, owner=owner)
+        response = client.get(LIST_URL, {"brokerId": submission.broker_id})
+        assert len(response.data["results"]) == 1
+        assert response.data["results"][0]["broker"]["id"] == submission.broker_id
+
+    def test_filter_by_broker_id_no_match_returns_empty(self, client, submission):
+        response = client.get(LIST_URL, {"brokerId": submission.broker_id + 999})
+        assert response.data["results"] == []

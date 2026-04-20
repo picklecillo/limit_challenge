@@ -11,8 +11,9 @@ class SubmissionFilterSet(django_filters.FilterSet):
     """
 
     status = django_filters.CharFilter(field_name="status", lookup_expr="iexact")
+    brokerId = django_filters.NumberFilter(field_name="broker_id")
 
     class Meta:
         model = models.Submission
-        fields = ["status"]
+        fields = ["status", "broker_id"]
 
