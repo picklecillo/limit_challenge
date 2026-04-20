@@ -44,9 +44,9 @@ export function useSubmissionsList(filters: SubmissionListFilters) {
 
 export function useSubmissionDetail(id: string | number) {
   return useQuery({
-    queryKey: [SUBMISSIONS_QUERY_KEY, id],
+    queryKey: [SUBMISSIONS_QUERY_KEY, id] as QueryKey,
     queryFn: () => fetchSubmissionDetail(id),
-    enabled: false,
+    enabled: true,
     staleTime: 60_000,
   });
 }
