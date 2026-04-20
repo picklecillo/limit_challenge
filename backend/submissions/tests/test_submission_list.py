@@ -159,3 +159,18 @@ class TestSubmissionListFilter:
     def test_filter_by_broker_id_no_match_returns_empty(self, client, submission):
         response = client.get(LIST_URL, {"brokerId": submission.broker_id + 999})
         assert response.data["results"] == []
+
+    def test_filter_by_company_search_returns_matching(self, client, submission, broker, owner):
+        other_company = Company.objects.create(legal_name="Global Industries")
+        Submission.objects.create(company=other_company, broker=broker, owner=owner)
+        response = client.get(LIST_URL, {"companySearch": "Widgets"})
+        assert len(response.data["results"]) == 1
+        assert response.data["results"][0]["company"]["legal_name"] == "Widgets Inc."
+
+    def test_filter_by_company_search_case_insensitive(self, client, submission):
+        response = client.get(LIST_URL, {"companySearch": "widgets"})
+        assert len(response.data["results"]) == 1
+
+    def test_filter_by_company_search_no_match_returns_empty(self, client, submission):
+        response = client.get(LIST_URL, {"companySearch": "nonexistent"})
+        assert response.data["results"] == []
