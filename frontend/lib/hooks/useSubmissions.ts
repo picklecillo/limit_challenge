@@ -37,7 +37,7 @@ export function useSubmissionsList(filters: SubmissionListFilters) {
   return useQuery({
     queryKey: [SUBMISSIONS_QUERY_KEY, filters] as QueryKey,
     queryFn: () => fetchSubmissions(filters),
-    enabled: false,
+    enabled: true,
   });
 }
 
