@@ -16,6 +16,7 @@ import { useMemo, useState } from 'react';
 import { useBrokerOptions } from '@/lib/hooks/useBrokerOptions';
 import { useSubmissionsList } from '@/lib/hooks/useSubmissions';
 import { SubmissionStatus } from '@/lib/types';
+import { SubmissionRow } from './SubmissionRow';
 
 const STATUS_OPTIONS: { label: string; value: SubmissionStatus | '' }[] = [
   { label: 'All statuses', value: '' },
@@ -107,9 +108,13 @@ export default function SubmissionsPage() {
               </Typography>
               <Divider />
               <Box>
-                <pre style={{ margin: 0, fontSize: 14 }}>
-                  {JSON.stringify({ filters, queryKey: submissionsQuery.queryKey }, null, 2)}
-                </pre>
+                {submissionsQuery.isFetching ? (
+                  <div>fetching...</div>
+                ) : (
+                  submissionsQuery.data?.results?.map((submission) => (
+                    <SubmissionRow key={submission.id} submission={submission} />
+                  ))
+                )}
               </Box>
             </Stack>
           </CardContent>
