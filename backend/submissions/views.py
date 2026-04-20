@@ -3,11 +3,13 @@ from rest_framework import viewsets
 
 from submissions import models, serializers
 from submissions.filters.submission import SubmissionFilterSet
+from submissions.pagination import SubmissionPagination
 
 
 class SubmissionViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = models.Submission.objects.all()
     filterset_class = SubmissionFilterSet
+    pagination_class = SubmissionPagination
 
     def get_queryset(self):
         queryset = super().get_queryset()

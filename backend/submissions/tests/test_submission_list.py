@@ -2,6 +2,8 @@ import pytest
 from django.urls import reverse
 
 from submissions.models import Broker, Company, Note, Submission, TeamMember
+from submissions.pagination import SubmissionPagination
+
 
 
 LIST_URL = reverse("submission-list")
@@ -174,3 +176,37 @@ class TestSubmissionListFilter:
     def test_filter_by_company_search_no_match_returns_empty(self, client, submission):
         response = client.get(LIST_URL, {"companySearch": "nonexistent"})
         assert response.data["results"] == []
+
+
+@pytest.mark.django_db
+class TestSubmissionPagination:
+    def _bulk_create(self, n, broker, company, owner):
+        Submission.objects.bulk_create([
+            Submission(company=company, broker=broker, owner=owner, status=Submission.Status.NEW)
+            for _ in range(n)
+        ])
+
+    def test_response_includes_total_pages(self, client, submission):
+        response = client.get(LIST_URL)
+        assert "total_pages" in response.data
+
+    def test_total_pages_single_page(self, client, submission):
+        response = client.get(LIST_URL)
+        assert response.data["total_pages"] == 1
+
+    def test_total_pages_multiple_pages(self, client, submission, broker, company, owner):
+        page_size = SubmissionPagination.page_size
+        self._bulk_create(page_size, broker, company, owner)
+        response = client.get(LIST_URL)
+        assert response.data["total_pages"] == 2
+
+    def test_second_page_returns_remaining_results(self, client, submission, broker, company, owner):
+        page_size = SubmissionPagination.page_size
+        self._bulk_create(page_size, broker, company, owner)
+        response = client.get(LIST_URL, {"page": 2})
+        assert len(response.data["results"]) == 1
+
+    def test_total_pages_empty_list(self, client, db):
+        response = client.get(LIST_URL)
+        assert response.data["total_pages"] == 1
+
