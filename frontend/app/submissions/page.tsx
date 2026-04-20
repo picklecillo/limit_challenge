@@ -104,12 +104,6 @@ export default function SubmissionsPage() {
         <Card variant="outlined">
           <CardContent>
             <Stack spacing={2}>
-              <Typography variant="h6">Submission list</Typography>
-              <Typography color="text.secondary">
-                Hook `submissionsQuery` to render rows, totals, and pagination states. The query is
-                disabled by default so no network calls fire until you enable it.
-              </Typography>
-              <Divider />
               <Box>
                 {submissionsQuery.isFetching ? (
                   <div>fetching...</div>
