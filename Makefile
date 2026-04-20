@@ -1,4 +1,4 @@
-.PHONY: up down logs
+.PHONY: up down logs test
 
 up:
 	docker compose up --build -d
@@ -8,3 +8,6 @@ down:
 
 logs:
 	docker compose logs -f
+
+test:
+	cd backend && .venv/bin/pytest -v $(ARGS)

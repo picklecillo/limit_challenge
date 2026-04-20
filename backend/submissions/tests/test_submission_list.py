@@ -1,0 +1,150 @@
+import pytest
+from django.urls import reverse
+
+from submissions.models import Broker, Company, Note, Submission, TeamMember
+
+
+LIST_URL = reverse("submission-list")
+
+
+@pytest.fixture
+def broker(db):
+    return Broker.objects.create(name="Acme Brokerage", primary_contact_email="broker@acme.com")
+
+
+@pytest.fixture
+def company(db):
+    return Company.objects.create(legal_name="Widgets Inc.", industry="Manufacturing")
+
+
+@pytest.fixture
+def owner(db):
+    return TeamMember.objects.create(full_name="Alice Smith", email="alice@example.com")
+
+
+@pytest.fixture
+def submission(broker, company, owner):
+    return Submission.objects.create(
+        company=company,
+        broker=broker,
+        owner=owner,
+        status=Submission.Status.NEW,
+        priority=Submission.Priority.HIGH,
+        summary="Test submission",
+    )
+
+
+@pytest.mark.django_db
+class TestSubmissionListStatus:
+    def test_returns_200(self, client, submission):
+        response = client.get(LIST_URL)
+        assert response.status_code == 200
+
+    def test_returns_all_submissions(self, client, submission, broker, company, owner):
+        Submission.objects.create(
+            company=company, broker=broker, owner=owner, status=Submission.Status.CLOSED
+        )
+        response = client.get(LIST_URL)
+        assert len(response.data["results"]) == 2
+
+    def test_empty_list(self, client, db):
+        response = client.get(LIST_URL)
+        assert response.status_code == 200
+        assert response.data["results"] == []
+
+
+@pytest.mark.django_db
+class TestSubmissionListShape:
+    def test_response_fields(self, client, submission):
+        response = client.get(LIST_URL)
+        item = response.data["results"][0]
+        expected_fields = {
+            "id", "status", "priority", "summary", "created_at", "updated_at",
+            "broker", "company", "owner", "document_count", "note_count", "latest_note",
+        }
+        assert expected_fields == set(item.keys())
+
+    def test_nested_broker_fields(self, client, submission):
+        item = client.get(LIST_URL).data["results"][0]
+        assert set(item["broker"].keys()) == {"id", "name", "primary_contact_email"}
+
+    def test_nested_company_fields(self, client, submission):
+        item = client.get(LIST_URL).data["results"][0]
+        assert set(item["company"].keys()) == {"id", "legal_name", "industry", "headquarters_city"}
+
+    def test_nested_owner_fields(self, client, submission):
+        item = client.get(LIST_URL).data["results"][0]
+        assert set(item["owner"].keys()) == {"id", "full_name", "email"}
+
+
+@pytest.mark.django_db
+class TestSubmissionListCounts:
+    def test_document_count_zero_when_no_documents(self, client, submission):
+        item = client.get(LIST_URL).data["results"][0]
+        assert item["document_count"] == 0
+
+    def test_note_count_zero_when_no_notes(self, client, submission):
+        item = client.get(LIST_URL).data["results"][0]
+        assert item["note_count"] == 0
+
+    def test_note_count_reflects_actual_notes(self, client, submission):
+        Note.objects.create(submission=submission, author_name="Bob", body="First note")
+        Note.objects.create(submission=submission, author_name="Carol", body="Second note")
+        item = client.get(LIST_URL).data["results"][0]
+        assert item["note_count"] == 2
+
+
+@pytest.mark.django_db
+class TestSubmissionListLatestNote:
+    def test_latest_note_null_when_no_notes(self, client, submission):
+        item = client.get(LIST_URL).data["results"][0]
+        assert item["latest_note"] is None
+
+    def test_latest_note_present_when_note_exists(self, client, submission):
+        Note.objects.create(submission=submission, author_name="Bob", body="A note")
+        item = client.get(LIST_URL).data["results"][0]
+        assert item["latest_note"] is not None
+
+    def test_latest_note_fields(self, client, submission):
+        Note.objects.create(submission=submission, author_name="Bob", body="A note")
+        latest_note = client.get(LIST_URL).data["results"][0]["latest_note"]
+        assert set(latest_note.keys()) == {"author_name", "body_preview", "created_at"}
+
+    def test_latest_note_is_most_recent(self, client, submission):
+        Note.objects.create(submission=submission, author_name="Old Author", body="Older note")
+        Note.objects.create(submission=submission, author_name="New Author", body="Newer note")
+        latest_note = client.get(LIST_URL).data["results"][0]["latest_note"]
+        assert latest_note["author_name"] == "New Author"
+
+    def test_latest_note_body_preview_truncated_at_200_chars(self, client, submission):
+        long_body = "x" * 300
+        Note.objects.create(submission=submission, author_name="Bob", body=long_body)
+        latest_note = client.get(LIST_URL).data["results"][0]["latest_note"]
+        assert len(latest_note["body_preview"]) == 200
+
+
+@pytest.mark.django_db
+class TestSubmissionListFilter:
+    def test_filter_by_status_returns_matching(self, client, submission, broker, company, owner):
+        Submission.objects.create(
+            company=company, broker=broker, owner=owner, status=Submission.Status.CLOSED
+        )
+        response = client.get(LIST_URL, {"status": "new"})
+        assert len(response.data["results"]) == 1
+        assert response.data["results"][0]["status"] == "new"
+
+    def test_filter_by_status_case_insensitive(self, client, submission):
+        response = client.get(LIST_URL, {"status": "NEW"})
+        assert len(response.data["results"]) == 1
+
+    def test_filter_by_status_no_match_returns_empty(self, client, submission):
+        response = client.get(LIST_URL, {"status": "lost"})
+        assert response.data["results"] == []
+
+    def test_no_filter_returns_all_statuses(self, client, submission, broker, company, owner):
+        Submission.objects.create(
+            company=company, broker=broker, owner=owner, status=Submission.Status.IN_REVIEW
+        )
+        response = client.get(LIST_URL)
+        statuses = {item["status"] for item in response.data["results"]}
+        assert statuses == {"new", "in_review"}
