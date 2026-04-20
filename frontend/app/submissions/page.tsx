@@ -2,6 +2,7 @@
 
 import {
   Box,
+  Button,
   Card,
   CardContent,
   Container,
@@ -30,14 +31,16 @@ export default function SubmissionsPage() {
   const [status, setStatus] = useState<SubmissionStatus | ''>('');
   const [brokerId, setBrokerId] = useState('');
   const [companyQuery, setCompanyQuery] = useState('');
+  const [page, setPage] = useState(1);
 
   const filters = useMemo(
     () => ({
       status: status || undefined,
       brokerId: brokerId || undefined,
       companySearch: companyQuery || undefined,
+      page,
     }),
-    [status, brokerId, companyQuery],
+    [status, brokerId, companyQuery, page],
   );
 
   const submissionsQuery = useSubmissionsList(filters);
@@ -63,7 +66,7 @@ export default function SubmissionsPage() {
                 select
                 label="Status"
                 value={status}
-                onChange={(event) => setStatus(event.target.value as SubmissionStatus | '')}
+                onChange={(event) => { setStatus(event.target.value as SubmissionStatus | ''); setPage(1); }}
                 fullWidth
               >
                 {STATUS_OPTIONS.map((option) => (
@@ -76,12 +79,12 @@ export default function SubmissionsPage() {
                 select
                 label="Broker"
                 value={brokerId}
-                onChange={(event) => setBrokerId(event.target.value)}
+                onChange={(event) => { setBrokerId(event.target.value); setPage(1); }}
                 fullWidth
                 helperText="Populate options via /api/brokers"
               >
                 <MenuItem value="">All brokers</MenuItem>
-                {brokerQuery.data?.map((broker) => (
+                {brokerQuery.data?.results?.map((broker) => (
                   <MenuItem key={broker.id} value={String(broker.id)}>
                     {broker.name}
                   </MenuItem>
@@ -90,7 +93,7 @@ export default function SubmissionsPage() {
               <TextField
                 label="Company search"
                 value={companyQuery}
-                onChange={(event) => setCompanyQuery(event.target.value)}
+                onChange={(event) => { setCompanyQuery(event.target.value); setPage(1); }}
                 fullWidth
                 helperText="Send as ?companySearch=..."
               />
@@ -116,6 +119,29 @@ export default function SubmissionsPage() {
                   ))
                 )}
               </Box>
+              {submissionsQuery.data && (
+                <Stack direction="row" spacing={2} alignItems="center" justifyContent="flex-end">
+                  <Typography variant="body2" color="text.secondary">
+                    Page {page} of {submissionsQuery.data.totalPages}
+                  </Typography>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    disabled={!submissionsQuery.data.previous || submissionsQuery.isFetching}
+                    onClick={() => setPage((p) => p - 1)}
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    disabled={!submissionsQuery.data.next || submissionsQuery.isFetching}
+                    onClick={() => setPage((p) => p + 1)}
+                  >
+                    Next
+                  </Button>
+                </Stack>
+              )}
             </Stack>
           </CardContent>
         </Card>

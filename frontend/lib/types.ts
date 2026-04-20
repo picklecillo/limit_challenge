@@ -75,6 +75,7 @@ export interface SubmissionDetail extends Omit<
 
 export interface PaginatedResponse<T> {
   count: number;
+  totalPages: number;
   next: string | null;
   previous: string | null;
   results: T[];
@@ -84,4 +85,5 @@ export interface SubmissionListFilters {
   status?: SubmissionStatus;
   brokerId?: string;
   companySearch?: string;
+  page?: number;
 }
