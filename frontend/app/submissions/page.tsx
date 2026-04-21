@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, Button, Card, CardContent, Container, Stack, Typography } from '@mui/material';
+import { Box, Button, Container, Stack, Typography } from '@mui/material';
 
 import { useSubmissionFilters } from '@/components/submissionFilters/SubmissionFiltersProvider';
 import { SubmissionFilters } from '@/components/submissionFilters/SubmissionFilters';
@@ -33,59 +33,55 @@ export default function SubmissionsPage() {
 
         <SubmissionFilters />
 
-        <Card variant="outlined">
-          <CardContent>
-            <Stack spacing={2}>
-              <Box>
-                {submissionsQuery.isFetching ? (
-                  <Typography color="text.secondary">Loading...</Typography>
-                ) : submissionsQuery.isError ? (
-                  <Typography color="error">Failed to load submissions.</Typography>
-                ) : isEmpty ? (
-                  <Stack spacing={1} alignItems="center" sx={{ py: 4 }}>
-                    <Typography color="text.secondary">
-                      {hasActiveFilters
-                        ? 'No submissions match your filters.'
-                        : 'No submissions yet.'}
-                    </Typography>
-                    {hasActiveFilters && (
-                      <Button size="small" variant="outlined" onClick={onClearFilters}>
-                        Clear filters
-                      </Button>
-                    )}
-                  </Stack>
-                ) : (
-                  results?.map((submission) => (
-                    <SubmissionRow key={submission.id} submission={submission} />
-                  ))
+        <Stack spacing={2}>
+          <Stack spacing={1.5}>
+            {submissionsQuery.isFetching ? (
+              <Typography color="text.secondary">Loading...</Typography>
+            ) : submissionsQuery.isError ? (
+              <Typography color="error">Failed to load submissions.</Typography>
+            ) : isEmpty ? (
+              <Stack spacing={1} alignItems="center" sx={{ py: 4 }}>
+                <Typography color="text.secondary">
+                  {hasActiveFilters
+                    ? 'No submissions match your filters.'
+                    : 'No submissions yet.'}
+                </Typography>
+                {hasActiveFilters && (
+                  <Button size="small" variant="outlined" onClick={onClearFilters}>
+                    Clear filters
+                  </Button>
                 )}
-              </Box>
-              {submissionsQuery.data && !isEmpty && (
-                <Stack direction="row" spacing={2} alignItems="center" justifyContent="flex-end">
-                  <Typography variant="body2" color="text.secondary">
-                    Page {page} of {submissionsQuery.data.totalPages}
-                  </Typography>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    disabled={!submissionsQuery.data.previous || submissionsQuery.isFetching}
-                    onClick={onPreviousPage}
-                  >
-                    Previous
-                  </Button>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    disabled={!submissionsQuery.data.next || submissionsQuery.isFetching}
-                    onClick={onNextPage}
-                  >
-                    Next
-                  </Button>
-                </Stack>
-              )}
+              </Stack>
+            ) : (
+              results?.map((submission) => (
+                <SubmissionRow key={submission.id} submission={submission} />
+              ))
+            )}
+          </Stack>
+          {submissionsQuery.data && !isEmpty && (
+            <Stack direction="row" spacing={2} alignItems="center" justifyContent="flex-end">
+              <Typography variant="body2" color="text.secondary">
+                Page {page} of {submissionsQuery.data.totalPages}
+              </Typography>
+              <Button
+                size="small"
+                variant="outlined"
+                disabled={!submissionsQuery.data.previous || submissionsQuery.isFetching}
+                onClick={onPreviousPage}
+              >
+                Previous
+              </Button>
+              <Button
+                size="small"
+                variant="outlined"
+                disabled={!submissionsQuery.data.next || submissionsQuery.isFetching}
+                onClick={onNextPage}
+              >
+                Next
+              </Button>
             </Stack>
-          </CardContent>
-        </Card>
+          )}
+        </Stack>
       </Stack>
     </Container>
   );
