@@ -1,3 +1,5 @@
+'use client';
+
 import { SubmissionFiltersProvider } from '@/components/submissionFilters/SubmissionFiltersProvider';
 
 export default function SubmissionsLayout({ children }: { children: React.ReactNode }) {
