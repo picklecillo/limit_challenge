@@ -50,7 +50,7 @@ export function SubmissionFilters() {
             fullWidth
           >
             <MenuItem value="">All brokers</MenuItem>
-            {brokers.results?.map((broker) => (
+            {brokers.map((broker) => (
               <MenuItem key={broker.id} value={String(broker.id)}>
                 {broker.name}
               </MenuItem>
