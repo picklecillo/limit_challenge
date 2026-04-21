@@ -17,10 +17,7 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
-
-import { useParams, useRouter } from 'next/navigation';
-
-import { useSubmissionDetail } from '@/lib/hooks/useSubmissions';
+import { useSubmissionDetailContext } from '@/components/submissionDetail/SubmissionDetailProvider';
 
 const PRIORITY_COLOR: Record<string, 'error' | 'warning' | 'default'> = {
   high: 'error',
@@ -45,11 +42,7 @@ function InlineField({ label, value }: { label: string; value: string }) {
 }
 
 export default function SubmissionDetailPage() {
-  const router = useRouter();
-  const params = useParams<{ id: string }>();
-  const submissionId = params?.id ?? '';
-
-  const { data, isFetching, isError } = useSubmissionDetail(submissionId);
+  const { query: { data, isFetching, isError }, onBack } = useSubmissionDetailContext();
 
   return (
     <Container maxWidth="md" sx={{ py: 6 }}>
@@ -63,13 +56,7 @@ export default function SubmissionDetailPage() {
           </div>
           <MuiLink
             component="button"
-            onClick={() => {
-              if (window.history.length <= 1) {
-                router.replace('/submissions');
-              } else {
-                router.back();
-              }
-            }}
+            onClick={onBack}
             underline="none"
             sx={{ background: 'none', border: 'none', font: 'inherit', cursor: 'pointer' }}
           >
@@ -87,11 +74,9 @@ export default function SubmissionDetailPage() {
 
         {data && (
           <Stack spacing={3}>
-            {/* Summary card: overview + broker + company + owner */}
             <Card variant="outlined">
               <CardContent sx={{ pb: '12px !important' }}>
                 <Stack spacing={1.5}>
-                  {/* Status row */}
                   <Box display="flex" alignItems="center" justifyContent="space-between">
                     <Box display="flex" gap={1}>
                       <Chip
@@ -112,12 +97,10 @@ export default function SubmissionDetailPage() {
                     </Box>
                   </Box>
 
-                  {/* Summary */}
                   <Typography variant="body2">{data.summary}</Typography>
 
                   <Divider />
 
-                  {/* Metadata grid */}
                   <Box display="grid" gridTemplateColumns="repeat(3, 1fr)" gap={1.5}>
                     <Box>
                       <Typography variant="overline" color="text.secondary" lineHeight={1.2} display="block" fontSize={10}>
@@ -149,7 +132,6 @@ export default function SubmissionDetailPage() {
               </CardContent>
             </Card>
 
-            {/* Contacts */}
             <Card variant="outlined">
               <CardHeader
                 title={`Contacts (${data.contacts.length})`}
@@ -186,7 +168,6 @@ export default function SubmissionDetailPage() {
               </CardContent>
             </Card>
 
-            {/* Documents */}
             <Card variant="outlined">
               <CardHeader
                 title={`Documents (${data.documents.length})`}
@@ -233,7 +214,6 @@ export default function SubmissionDetailPage() {
               </CardContent>
             </Card>
 
-            {/* Notes */}
             <Card variant="outlined">
               <CardHeader
                 title={`Notes (${data.notes.length})`}
