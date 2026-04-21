@@ -6,13 +6,13 @@ import {
   Card,
   CardContent,
   Container,
-  Divider,
   MenuItem,
   Stack,
   TextField,
   Typography,
 } from '@mui/material';
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { useBrokerOptions } from '@/lib/hooks/useBrokerOptions';
 import { useSubmissionsList } from '@/lib/hooks/useSubmissions';
@@ -28,19 +28,51 @@ const STATUS_OPTIONS: { label: string; value: SubmissionStatus | '' }[] = [
 ];
 
 export default function SubmissionsPage() {
-  const [status, setStatus] = useState<SubmissionStatus | ''>('');
-  const [brokerId, setBrokerId] = useState('');
-  const [companyQuery, setCompanyQuery] = useState('');
-  const [page, setPage] = useState(1);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const status = (searchParams.get('status') ?? '') as SubmissionStatus | '';
+  const brokerId = searchParams.get('brokerId') ?? '';
+  const companySearch = searchParams.get('companySearch') ?? '';
+  const page = parseInt(searchParams.get('page') ?? '1', 10);
+
+  const [companySearchInput, setCompanySearchInput] = useState(companySearch);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    setCompanySearchInput(companySearch);
+  }, [companySearch]);
+
+  const setFilter = useCallback(
+    (updates: Record<string, string>, resetPage = true) => {
+      const params = new URLSearchParams(searchParams.toString());
+      for (const [key, value] of Object.entries(updates)) {
+        if (value) params.set(key, value);
+        else params.delete(key);
+      }
+      if (resetPage) params.delete('page');
+      router.replace(`${pathname}?${params.toString()}`);
+    },
+    [searchParams, pathname, router],
+  );
+
+  const handleCompanyChange = (value: string) => {
+    setCompanySearchInput(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setFilter({ companySearch: value });
+    }, 300);
+  };
 
   const filters = useMemo(
     () => ({
       status: status || undefined,
       brokerId: brokerId || undefined,
-      companySearch: companyQuery || undefined,
+      companySearch: companySearch || undefined,
       page,
     }),
-    [status, brokerId, companyQuery, page],
+    [status, brokerId, companySearch, page],
   );
 
   const submissionsQuery = useSubmissionsList(filters);
@@ -53,10 +85,6 @@ export default function SubmissionsPage() {
           <Typography variant="h4" component="h1">
             Submissions
           </Typography>
-          <Typography color="text.secondary">
-            Filters update the query parameters and drive backend filtering. Hook these inputs to
-            your API calls when you implement the actual data fetching.
-          </Typography>
         </Box>
 
         <Card variant="outlined">
@@ -66,7 +94,7 @@ export default function SubmissionsPage() {
                 select
                 label="Status"
                 value={status}
-                onChange={(event) => { setStatus(event.target.value as SubmissionStatus | ''); setPage(1); }}
+                onChange={(event) => setFilter({ status: event.target.value })}
                 fullWidth
               >
                 {STATUS_OPTIONS.map((option) => (
@@ -79,9 +107,8 @@ export default function SubmissionsPage() {
                 select
                 label="Broker"
                 value={brokerId}
-                onChange={(event) => { setBrokerId(event.target.value); setPage(1); }}
+                onChange={(event) => setFilter({ brokerId: event.target.value })}
                 fullWidth
-                helperText="Populate options via /api/brokers"
               >
                 <MenuItem value="">All brokers</MenuItem>
                 {brokerQuery.data?.results?.map((broker) => (
@@ -92,10 +119,9 @@ export default function SubmissionsPage() {
               </TextField>
               <TextField
                 label="Company search"
-                value={companyQuery}
-                onChange={(event) => { setCompanyQuery(event.target.value); setPage(1); }}
+                value={companySearchInput}
+                onChange={(event) => handleCompanyChange(event.target.value)}
                 fullWidth
-                helperText="Send as ?companySearch=..."
               />
             </Stack>
           </CardContent>
@@ -122,7 +148,7 @@ export default function SubmissionsPage() {
                     size="small"
                     variant="outlined"
                     disabled={!submissionsQuery.data.previous || submissionsQuery.isFetching}
-                    onClick={() => setPage((p) => p - 1)}
+                    onClick={() => setFilter({ page: String(page - 1) }, false)}
                   >
                     Previous
                   </Button>
@@ -130,7 +156,7 @@ export default function SubmissionsPage() {
                     size="small"
                     variant="outlined"
                     disabled={!submissionsQuery.data.next || submissionsQuery.isFetching}
-                    onClick={() => setPage((p) => p + 1)}
+                    onClick={() => setFilter({ page: String(page + 1) }, false)}
                   >
                     Next
                   </Button>

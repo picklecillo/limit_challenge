@@ -18,8 +18,7 @@ import {
   Typography,
 } from '@mui/material';
 
-import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 
 import { useSubmissionDetail } from '@/lib/hooks/useSubmissions';
 
@@ -46,6 +45,7 @@ function InlineField({ label, value }: { label: string; value: string }) {
 }
 
 export default function SubmissionDetailPage() {
+  const router = useRouter();
   const params = useParams<{ id: string }>();
   const submissionId = params?.id ?? '';
 
@@ -61,7 +61,18 @@ export default function SubmissionDetailPage() {
               Full submission payload with contacts, documents, and notes.
             </Typography>
           </div>
-          <MuiLink component={Link} href="/submissions" underline="none">
+          <MuiLink
+            component="button"
+            onClick={() => {
+              if (window.history.length <= 1) {
+                router.replace('/submissions');
+              } else {
+                router.back();
+              }
+            }}
+            underline="none"
+            sx={{ background: 'none', border: 'none', font: 'inherit', cursor: 'pointer' }}
+          >
             Back to list
           </MuiLink>
         </Box>
