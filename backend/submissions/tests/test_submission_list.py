@@ -1,7 +1,7 @@
 import pytest
 from django.urls import reverse
 
-from submissions.models import Broker, Company, Note, Submission, TeamMember
+from submissions.models import Broker, Company, Document, Note, Submission, TeamMember
 from submissions.pagination import TotalPageNumberPagination
 
 
@@ -176,6 +176,49 @@ class TestSubmissionListFilter:
     def test_filter_by_company_search_no_match_returns_empty(self, client, submission):
         response = client.get(LIST_URL, {"companySearch": "nonexistent"})
         assert response.data["results"] == []
+
+
+@pytest.mark.django_db
+class TestSubmissionListHasDocumentsFilter:
+    def test_has_documents_true_returns_only_submissions_with_documents(
+        self, client, submission, broker, company, owner
+    ):
+        submission_no_docs = Submission.objects.create(
+            company=company, broker=broker, owner=owner, status=Submission.Status.NEW
+        )
+        Document.objects.create(submission=submission, title="Doc", doc_type="policy", file_url="http://x.com/f")
+        response = client.get(LIST_URL, {"hasDocuments": "true"})
+        ids = {item["id"] for item in response.data["results"]}
+        assert submission.id in ids
+        assert submission_no_docs.id not in ids
+
+    def test_has_documents_false_returns_only_submissions_without_documents(
+        self, client, submission, broker, company, owner
+    ):
+        submission_with_docs = Submission.objects.create(
+            company=company, broker=broker, owner=owner, status=Submission.Status.NEW
+        )
+        Document.objects.create(submission=submission_with_docs, title="Doc", doc_type="policy", file_url="http://x.com/f")
+        response = client.get(LIST_URL, {"hasDocuments": "false"})
+        ids = {item["id"] for item in response.data["results"]}
+        assert submission.id in ids
+        assert submission_with_docs.id not in ids
+
+    def test_has_documents_true_no_duplicates_when_multiple_documents(
+        self, client, submission
+    ):
+        Document.objects.create(submission=submission, title="Doc 1", doc_type="policy", file_url="http://x.com/1")
+        Document.objects.create(submission=submission, title="Doc 2", doc_type="policy", file_url="http://x.com/2")
+        response = client.get(LIST_URL, {"hasDocuments": "true"})
+        assert len(response.data["results"]) == 1
+
+    def test_has_documents_omitted_returns_all(self, client, submission, broker, company, owner):
+        submission_with_docs = Submission.objects.create(
+            company=company, broker=broker, owner=owner
+        )
+        Document.objects.create(submission=submission_with_docs, title="Doc", doc_type="policy", file_url="http://x.com/f")
+        response = client.get(LIST_URL)
+        assert len(response.data["results"]) == 2
 
 
 @pytest.mark.django_db
