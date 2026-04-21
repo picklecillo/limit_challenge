@@ -17,7 +17,7 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
-import { useSubmissionDetailContext } from '@/components/submissionDetail/SubmissionDetailProvider';
+import { useSubmissionDetailContext } from '@/components/submissions/detail/SubmissionDetailProvider';
 
 const PRIORITY_COLOR: Record<string, 'error' | 'warning' | 'default'> = {
   high: 'error',

@@ -8,13 +8,16 @@ import { useSubmissionsList } from '@/lib/hooks/useSubmissions';
 import { Broker, PaginatedResponse, SubmissionListItem, SubmissionStatus } from '@/lib/types';
 import { UseQueryResult } from '@tanstack/react-query';
 
-interface SubmissionFiltersContextValue {
+interface SubmissionsContextValue {
   status: SubmissionStatus | '';
   brokerId: string;
   companySearchInput: string;
   hasDocuments: boolean;
+  hasActiveFilters: boolean;
   page: number;
   brokers: Broker[];
+  results: SubmissionListItem[] | undefined;
+  isEmpty: boolean;
   submissionsQuery: UseQueryResult<PaginatedResponse<SubmissionListItem>>;
   onStatusChange: (value: string) => void;
   onBrokerChange: (value: string) => void;
@@ -25,15 +28,15 @@ interface SubmissionFiltersContextValue {
   onNextPage: () => void;
 }
 
-const SubmissionFiltersContext = createContext<SubmissionFiltersContextValue | null>(null);
+const SubmissionsContext = createContext<SubmissionsContextValue | null>(null);
 
-export function useSubmissionFilters() {
-  const ctx = useContext(SubmissionFiltersContext);
-  if (!ctx) throw new Error('useSubmissionFilters must be used within SubmissionFiltersProvider');
+export function useSubmissions() {
+  const ctx = useContext(SubmissionsContext);
+  if (!ctx) throw new Error('useSubmissions must be used within SubmissionsProvider');
   return ctx;
 }
 
-export function SubmissionFiltersProvider({ children }: { children: React.ReactNode }) {
+export function SubmissionsProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -109,14 +112,21 @@ export function SubmissionFiltersProvider({ children }: { children: React.ReactN
   const submissionsQuery = useSubmissionsList(filters);
   const brokerQuery = useBrokerOptions();
 
-  const value = useMemo<SubmissionFiltersContextValue>(
+  const hasActiveFilters = !!(status || brokerId || companySearch || hasDocuments);
+  const results = submissionsQuery.data?.results;
+  const isEmpty = !submissionsQuery.isFetching && results?.length === 0;
+
+  const value = useMemo<SubmissionsContextValue>(
     () => ({
       status,
       brokerId,
       companySearchInput,
       hasDocuments,
+      hasActiveFilters,
       page,
       brokers: brokerQuery.data ?? [],
+      results,
+      isEmpty,
       submissionsQuery,
       onStatusChange,
       onBrokerChange,
@@ -131,8 +141,11 @@ export function SubmissionFiltersProvider({ children }: { children: React.ReactN
       brokerId,
       companySearchInput,
       hasDocuments,
+      hasActiveFilters,
       page,
       brokerQuery.data,
+      results,
+      isEmpty,
       submissionsQuery,
       onStatusChange,
       onBrokerChange,
@@ -145,8 +158,8 @@ export function SubmissionFiltersProvider({ children }: { children: React.ReactN
   );
 
   return (
-    <SubmissionFiltersContext.Provider value={value}>
+    <SubmissionsContext.Provider value={value}>
       {children}
-    </SubmissionFiltersContext.Provider>
+    </SubmissionsContext.Provider>
   );
 }

@@ -1,26 +1,32 @@
 'use client';
 
-import { Box, Button, Container, Stack, Typography } from '@mui/material';
+import { Box, Container, Stack, Typography } from '@mui/material';
 
-import { useSubmissionFilters } from '@/components/submissionFilters/SubmissionFiltersProvider';
-import { SubmissionFilters } from '@/components/submissionFilters/SubmissionFilters';
-import { SubmissionRow } from '@/components/submissionRow/SubmissionRow';
+import { useSubmissions } from '@/components/submissions/list/SubmissionsProvider';
+import { SubmissionFilters } from '@/components/submissions/list/SubmissionFilters';
+import { SubmissionsList } from '@/components/submissions/list/SubmissionsList';
+import { SubmissionsPagination } from '@/components/submissions/list/SubmissionsPagination';
 
 export default function SubmissionsPage() {
   const {
     status,
     brokerId,
     companySearchInput,
+    hasDocuments,
+    hasActiveFilters,
     page,
+    brokers,
+    results,
+    isEmpty,
     submissionsQuery,
+    onStatusChange,
+    onBrokerChange,
+    onCompanySearchChange,
+    onHasDocumentsChange,
+    onClearFilters,
     onPreviousPage,
     onNextPage,
-    onClearFilters,
-  } = useSubmissionFilters();
-
-  const hasActiveFilters = !!(status || brokerId || companySearchInput);
-  const results = submissionsQuery.data?.results;
-  const isEmpty = !submissionsQuery.isFetching && results?.length === 0;
+  } = useSubmissions();
 
   return (
     <Container maxWidth="lg" sx={{ py: 6 }}>
@@ -31,55 +37,39 @@ export default function SubmissionsPage() {
           </Typography>
         </Box>
 
-        <SubmissionFilters />
+        <SubmissionFilters
+          status={status}
+          brokerId={brokerId}
+          companySearchInput={companySearchInput}
+          hasDocuments={hasDocuments}
+          hasActiveFilters={hasActiveFilters}
+          brokers={brokers}
+          onStatusChange={onStatusChange}
+          onBrokerChange={onBrokerChange}
+          onCompanySearchChange={onCompanySearchChange}
+          onHasDocumentsChange={onHasDocumentsChange}
+          onClearFilters={onClearFilters}
+        />
 
         <Stack spacing={2}>
-          <Stack spacing={1.5}>
-            {submissionsQuery.isFetching ? (
-              <Typography color="text.secondary">Loading...</Typography>
-            ) : submissionsQuery.isError ? (
-              <Typography color="error">Failed to load submissions.</Typography>
-            ) : isEmpty ? (
-              <Stack spacing={1} alignItems="center" sx={{ py: 4 }}>
-                <Typography color="text.secondary">
-                  {hasActiveFilters
-                    ? 'No submissions match your filters.'
-                    : 'No submissions yet.'}
-                </Typography>
-                {hasActiveFilters && (
-                  <Button size="small" variant="outlined" onClick={onClearFilters}>
-                    Clear filters
-                  </Button>
-                )}
-              </Stack>
-            ) : (
-              results?.map((submission) => (
-                <SubmissionRow key={submission.id} submission={submission} />
-              ))
-            )}
-          </Stack>
+          <SubmissionsList
+            isFetching={submissionsQuery.isFetching}
+            isError={submissionsQuery.isError}
+            isEmpty={isEmpty}
+            hasActiveFilters={hasActiveFilters}
+            results={results}
+            onClearFilters={onClearFilters}
+          />
           {submissionsQuery.data && !isEmpty && (
-            <Stack direction="row" spacing={2} alignItems="center" justifyContent="flex-end">
-              <Typography variant="body2" color="text.secondary">
-                Page {page} of {submissionsQuery.data.totalPages}
-              </Typography>
-              <Button
-                size="small"
-                variant="outlined"
-                disabled={!submissionsQuery.data.previous || submissionsQuery.isFetching}
-                onClick={onPreviousPage}
-              >
-                Previous
-              </Button>
-              <Button
-                size="small"
-                variant="outlined"
-                disabled={!submissionsQuery.data.next || submissionsQuery.isFetching}
-                onClick={onNextPage}
-              >
-                Next
-              </Button>
-            </Stack>
+            <SubmissionsPagination
+              page={page}
+              totalPages={submissionsQuery.data.totalPages}
+              isFetching={submissionsQuery.isFetching}
+              hasPrevious={!!submissionsQuery.data.previous}
+              hasNext={!!submissionsQuery.data.next}
+              onPreviousPage={onPreviousPage}
+              onNextPage={onNextPage}
+            />
           )}
         </Stack>
       </Stack>

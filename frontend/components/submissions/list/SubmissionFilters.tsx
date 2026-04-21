@@ -1,7 +1,6 @@
 import { Button, Card, CardContent, Checkbox, FormControlLabel, MenuItem, Stack, TextField } from '@mui/material';
 
-import { SubmissionStatus } from '@/lib/types';
-import { useSubmissionFilters } from './SubmissionFiltersProvider';
+import { Broker, SubmissionStatus } from '@/lib/types';
 
 const STATUS_OPTIONS: { label: string; value: SubmissionStatus | '' }[] = [
   { label: 'All statuses', value: '' },
@@ -11,21 +10,21 @@ const STATUS_OPTIONS: { label: string; value: SubmissionStatus | '' }[] = [
   { label: 'Lost', value: 'lost' },
 ];
 
-export function SubmissionFilters() {
-  const {
-    status,
-    brokerId,
-    companySearchInput,
-    hasDocuments,
-    brokers,
-    onStatusChange,
-    onBrokerChange,
-    onCompanySearchChange,
-    onHasDocumentsChange,
-    onClearFilters,
-  } = useSubmissionFilters();
+interface Props {
+  status: SubmissionStatus | '';
+  brokerId: string;
+  companySearchInput: string;
+  hasDocuments: boolean;
+  hasActiveFilters: boolean;
+  brokers: Broker[];
+  onStatusChange: (value: string) => void;
+  onBrokerChange: (value: string) => void;
+  onCompanySearchChange: (value: string) => void;
+  onHasDocumentsChange: (value: boolean) => void;
+  onClearFilters: () => void;
+}
 
-  const hasActiveFilters = !!(status || brokerId || companySearchInput || hasDocuments);
+export function SubmissionFilters({ status, brokerId, companySearchInput, hasDocuments, hasActiveFilters, brokers, onStatusChange, onBrokerChange, onCompanySearchChange, onHasDocumentsChange, onClearFilters }: Props) {
 
   return (
     <Card variant="outlined">

@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
-import { SubmissionRow } from '@/components/submissionRow/SubmissionRow';
+import { SubmissionRow } from '@/components/submissions/list/SubmissionRow';
 import { mockSubmission } from '@/__tests__/fixtures/submissions';
 
 describe('SubmissionRow', () => {
