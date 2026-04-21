@@ -85,5 +85,6 @@ export interface SubmissionListFilters {
   status?: SubmissionStatus;
   brokerId?: string;
   companySearch?: string;
+  hasDocuments?: boolean;
   page?: number;
 }

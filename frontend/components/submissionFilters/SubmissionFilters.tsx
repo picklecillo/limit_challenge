@@ -1,4 +1,4 @@
-import { Button, Card, CardContent, MenuItem, Stack, TextField } from '@mui/material';
+import { Button, Card, CardContent, Checkbox, FormControlLabel, MenuItem, Stack, TextField } from '@mui/material';
 
 import { SubmissionStatus } from '@/lib/types';
 import { useSubmissionFilters } from './SubmissionFiltersProvider';
@@ -16,14 +16,16 @@ export function SubmissionFilters() {
     status,
     brokerId,
     companySearchInput,
+    hasDocuments,
     brokers,
     onStatusChange,
     onBrokerChange,
     onCompanySearchChange,
+    onHasDocumentsChange,
     onClearFilters,
   } = useSubmissionFilters();
 
-  const hasActiveFilters = !!(status || brokerId || companySearchInput);
+  const hasActiveFilters = !!(status || brokerId || companySearchInput || hasDocuments);
 
   return (
     <Card variant="outlined">
@@ -61,6 +63,16 @@ export function SubmissionFilters() {
             value={companySearchInput}
             onChange={(event) => onCompanySearchChange(event.target.value)}
             fullWidth
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={hasDocuments}
+                onChange={(event) => onHasDocumentsChange(event.target.checked)}
+              />
+            }
+            label="Has documents"
+            sx={{ whiteSpace: 'nowrap', alignSelf: 'center', flexShrink: 0 }}
           />
           <Button
             variant="outlined"

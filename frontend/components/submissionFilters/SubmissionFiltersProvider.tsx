@@ -12,12 +12,14 @@ interface SubmissionFiltersContextValue {
   status: SubmissionStatus | '';
   brokerId: string;
   companySearchInput: string;
+  hasDocuments: boolean;
   page: number;
   brokers: Broker[];
   submissionsQuery: UseQueryResult<PaginatedResponse<SubmissionListItem>>;
   onStatusChange: (value: string) => void;
   onBrokerChange: (value: string) => void;
   onCompanySearchChange: (value: string) => void;
+  onHasDocumentsChange: (value: boolean) => void;
   onClearFilters: () => void;
   onPreviousPage: () => void;
   onNextPage: () => void;
@@ -39,6 +41,7 @@ export function SubmissionFiltersProvider({ children }: { children: React.ReactN
   const status = (searchParams.get('status') ?? '') as SubmissionStatus | '';
   const brokerId = searchParams.get('brokerId') ?? '';
   const companySearch = searchParams.get('companySearch') ?? '';
+  const hasDocuments = searchParams.get('hasDocuments') === 'true';
   const page = parseInt(searchParams.get('page') ?? '1', 10);
 
   const [companySearchInput, setCompanySearchInput] = useState(companySearch);
@@ -63,6 +66,10 @@ export function SubmissionFiltersProvider({ children }: { children: React.ReactN
 
   const onStatusChange = useCallback((value: string) => setFilter({ status: value }), [setFilter]);
   const onBrokerChange = useCallback((value: string) => setFilter({ brokerId: value }), [setFilter]);
+  const onHasDocumentsChange = useCallback(
+    (value: boolean) => setFilter({ hasDocuments: value ? 'true' : '' }),
+    [setFilter],
+  );
   const onCompanySearchChange = useCallback(
     (value: string) => {
       setCompanySearchInput(value);
@@ -93,9 +100,10 @@ export function SubmissionFiltersProvider({ children }: { children: React.ReactN
       status: status || undefined,
       brokerId: brokerId || undefined,
       companySearch: companySearch || undefined,
+      hasDocuments: hasDocuments || undefined,
       page,
     }),
-    [status, brokerId, companySearch, page],
+    [status, brokerId, companySearch, hasDocuments, page],
   );
 
   const submissionsQuery = useSubmissionsList(filters);
@@ -106,12 +114,14 @@ export function SubmissionFiltersProvider({ children }: { children: React.ReactN
       status,
       brokerId,
       companySearchInput,
+      hasDocuments,
       page,
       brokers: brokerQuery.data ?? [],
       submissionsQuery,
       onStatusChange,
       onBrokerChange,
       onCompanySearchChange,
+      onHasDocumentsChange,
       onClearFilters,
       onPreviousPage,
       onNextPage,
@@ -120,12 +130,14 @@ export function SubmissionFiltersProvider({ children }: { children: React.ReactN
       status,
       brokerId,
       companySearchInput,
+      hasDocuments,
       page,
       brokerQuery.data,
       submissionsQuery,
       onStatusChange,
       onBrokerChange,
       onCompanySearchChange,
+      onHasDocumentsChange,
       onClearFilters,
       onPreviousPage,
       onNextPage,

@@ -42,17 +42,19 @@ describe('useSubmissionFilters', () => {
     expect(result.current.status).toBe('');
     expect(result.current.brokerId).toBe('');
     expect(result.current.companySearchInput).toBe('');
+    expect(result.current.hasDocuments).toBe(false);
     expect(result.current.page).toBe(1);
   });
 
-  it('reads status, brokerId, companySearch, page from URL', () => {
+  it('reads status, brokerId, companySearch, hasDocuments, page from URL', () => {
     mockSearchParamsValue = new URLSearchParams(
-      'status=in_review&brokerId=5&companySearch=acme&page=3',
+      'status=in_review&brokerId=5&companySearch=acme&hasDocuments=true&page=3',
     );
     const { result } = renderHook(() => useSubmissionFilters(), { wrapper });
     expect(result.current.status).toBe('in_review');
     expect(result.current.brokerId).toBe('5');
     expect(result.current.companySearchInput).toBe('acme');
+    expect(result.current.hasDocuments).toBe(true);
     expect(result.current.page).toBe(3);
   });
 
@@ -71,6 +73,19 @@ describe('useSubmissionFilters', () => {
     mockSearchParamsValue = new URLSearchParams('status=new');
     const { result } = renderHook(() => useSubmissionFilters(), { wrapper });
     act(() => result.current.onStatusChange(''));
+    expect(mockReplace).toHaveBeenCalledWith('/submissions?');
+  });
+
+  it('onHasDocumentsChange sets hasDocuments param when true', () => {
+    const { result } = renderHook(() => useSubmissionFilters(), { wrapper });
+    act(() => result.current.onHasDocumentsChange(true));
+    expect(mockReplace).toHaveBeenCalledWith('/submissions?hasDocuments=true');
+  });
+
+  it('onHasDocumentsChange removes hasDocuments param when false', () => {
+    mockSearchParamsValue = new URLSearchParams('hasDocuments=true');
+    const { result } = renderHook(() => useSubmissionFilters(), { wrapper });
+    act(() => result.current.onHasDocumentsChange(false));
     expect(mockReplace).toHaveBeenCalledWith('/submissions?');
   });
 
