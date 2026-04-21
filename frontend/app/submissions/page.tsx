@@ -123,6 +123,18 @@ export default function SubmissionsPage() {
                 onChange={(event) => handleCompanyChange(event.target.value)}
                 fullWidth
               />
+              <Button
+                variant="outlined"
+                color="inherit"
+                disabled={!status && !brokerId && !companySearch}
+                onClick={() => {
+                  setCompanySearchInput('');
+                  router.replace(pathname);
+                }}
+                sx={{ whiteSpace: 'nowrap', alignSelf: 'center', flexShrink: 0 }}
+              >
+                Clear filters
+              </Button>
             </Stack>
           </CardContent>
         </Card>
