@@ -12,7 +12,10 @@ class SubmissionViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = TotalPageNumberPagination
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = super().get_queryset().select_related("broker", "company", "owner").order_by("-updated_at")
+
+        if self.action == "retrieve":
+            queryset = queryset.prefetch_related("contacts", "documents", "notes")
 
         if self.action == "list":
             latest_note = models.Note.objects.filter(submission_id=OuterRef("pk")).order_by("-created_at")
