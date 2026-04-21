@@ -179,6 +179,67 @@ class TestSubmissionListFilter:
 
 
 @pytest.mark.django_db
+class TestSubmissionListFilterCombined:
+    def test_status_and_broker_id_both_match(self, client, submission, company, owner):
+        other_broker = Broker.objects.create(name="Other Brokerage")
+        Submission.objects.create(
+            company=company, broker=other_broker, owner=owner, status=Submission.Status.NEW
+        )
+        Submission.objects.create(
+            company=company, broker=submission.broker, owner=owner, status=Submission.Status.CLOSED
+        )
+        response = client.get(LIST_URL, {"status": "new", "brokerId": submission.broker_id})
+        assert len(response.data["results"]) == 1
+        assert response.data["results"][0]["id"] == submission.id
+
+    def test_status_and_broker_id_no_match(self, client, submission, company, owner):
+        other_broker = Broker.objects.create(name="Other Brokerage")
+        response = client.get(LIST_URL, {"status": "new", "brokerId": other_broker.id})
+        assert response.data["results"] == []
+
+    def test_status_and_company_search_both_match(self, client, submission, broker, owner):
+        other_company = Company.objects.create(legal_name="Global Industries")
+        Submission.objects.create(
+            company=other_company, broker=broker, owner=owner, status=Submission.Status.NEW
+        )
+        Submission.objects.create(
+            company=submission.company, broker=broker, owner=owner, status=Submission.Status.CLOSED
+        )
+        response = client.get(LIST_URL, {"status": "new", "companySearch": "Widgets"})
+        assert len(response.data["results"]) == 1
+        assert response.data["results"][0]["id"] == submission.id
+
+    def test_broker_id_and_company_search_both_match(self, client, submission, owner):
+        other_broker = Broker.objects.create(name="Other Brokerage")
+        other_company = Company.objects.create(legal_name="Global Industries")
+        Submission.objects.create(company=other_company, broker=submission.broker, owner=owner)
+        Submission.objects.create(company=submission.company, broker=other_broker, owner=owner)
+        response = client.get(LIST_URL, {"brokerId": submission.broker_id, "companySearch": "Widgets"})
+        assert len(response.data["results"]) == 1
+        assert response.data["results"][0]["id"] == submission.id
+
+    def test_all_three_filters_combined(self, client, submission, owner):
+        other_broker = Broker.objects.create(name="Other Brokerage")
+        other_company = Company.objects.create(legal_name="Global Industries")
+        Submission.objects.create(
+            company=other_company, broker=submission.broker, owner=owner, status=Submission.Status.NEW
+        )
+        Submission.objects.create(
+            company=submission.company, broker=other_broker, owner=owner, status=Submission.Status.NEW
+        )
+        Submission.objects.create(
+            company=submission.company, broker=submission.broker, owner=owner, status=Submission.Status.CLOSED
+        )
+        response = client.get(LIST_URL, {
+            "status": "new",
+            "brokerId": submission.broker_id,
+            "companySearch": "Widgets",
+        })
+        assert len(response.data["results"]) == 1
+        assert response.data["results"][0]["id"] == submission.id
+
+
+@pytest.mark.django_db
 class TestSubmissionPagination:
     def _bulk_create(self, n, broker, company, owner):
         Submission.objects.bulk_create([
