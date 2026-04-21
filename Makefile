@@ -1,4 +1,4 @@
-.PHONY: up down logs test init
+.PHONY: up down logs test-backend test-frontend init
 
 up:
 	docker compose up --build -d
@@ -9,8 +9,11 @@ down:
 logs:
 	docker compose logs -f
 
-test:
+test-backend:
 	cd backend && .venv/bin/pytest -v $(ARGS)
+
+test-frontend:
+	cd frontend && npm run test -- --ci
 
 init:
 	docker compose up --build -d backend
