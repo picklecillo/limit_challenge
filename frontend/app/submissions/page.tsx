@@ -2,7 +2,7 @@
 
 import { Box, Container, Stack, Typography } from '@mui/material';
 
-import { SubmissionFilters } from '@/components/submissions/list/SubmissionFilters';
+import { SubmissionFilters } from '@/components/submissions/list/filters/SubmissionFilters';
 import { SubmissionsList } from '@/components/submissions/list/SubmissionsList';
 import { SubmissionsPagination } from '@/components/submissions/list/SubmissionsPagination';
 
