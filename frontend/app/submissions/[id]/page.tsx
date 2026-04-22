@@ -5,7 +5,6 @@ import {
   Card,
   CardContent,
   CardHeader,
-  Chip,
   Container,
   Divider,
   Link as MuiLink,
@@ -18,19 +17,8 @@ import {
   Typography,
 } from '@mui/material';
 import { useSubmissionDetailContext } from '@/components/submissions/detail/SubmissionDetailProvider';
-
-const PRIORITY_COLOR: Record<string, 'error' | 'warning' | 'default'> = {
-  high: 'error',
-  medium: 'warning',
-  low: 'default',
-};
-
-const STATUS_COLOR: Record<string, 'default' | 'info' | 'success' | 'error'> = {
-  new: 'info',
-  in_review: 'default',
-  closed: 'success',
-  lost: 'error',
-};
+import { StatusChip } from '@/components/submissions/shared/StatusChip';
+import { PriorityChip } from '@/components/submissions/shared/PriorityChip';
 
 function InlineField({ label, value }: { label: string; value: string }) {
   return (
@@ -79,17 +67,8 @@ export default function SubmissionDetailPage() {
                 <Stack spacing={1.5}>
                   <Box display="flex" alignItems="center" justifyContent="space-between">
                     <Box display="flex" gap={1}>
-                      <Chip
-                        label={data.status.replace('_', ' ')}
-                        size="small"
-                        color={STATUS_COLOR[data.status]}
-                      />
-                      <Chip
-                        label={data.priority}
-                        size="small"
-                        color={PRIORITY_COLOR[data.priority] ?? 'default'}
-                        variant="outlined"
-                      />
+                      <StatusChip status={data.status} />
+                      <PriorityChip priority={data.priority} />
                     </Box>
                     <Box display="flex" gap={3}>
                       <InlineField label="Created" value={new Date(data.createdAt).toLocaleDateString()} />

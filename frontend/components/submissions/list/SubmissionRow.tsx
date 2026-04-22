@@ -1,20 +1,9 @@
-import { Box, Card, CardActionArea, Chip, Stack, Typography } from '@mui/material';
+import { Box, Card, CardActionArea, Stack, Typography } from '@mui/material';
 import Link from 'next/link';
 
-import { SubmissionListItem, SubmissionPriority, SubmissionStatus } from '@/lib/types';
-
-const STATUS_COLOR: Record<SubmissionStatus, 'default' | 'info' | 'success' | 'error'> = {
-  new: 'info',
-  in_review: 'default',
-  closed: 'success',
-  lost: 'error',
-};
-
-const PRIORITY_COLOR: Record<SubmissionPriority, 'error' | 'warning' | 'default'> = {
-  high: 'error',
-  medium: 'warning',
-  low: 'default',
-};
+import { SubmissionListItem, SubmissionPriority } from '@/lib/types';
+import { StatusChip } from '@/components/submissions/shared/StatusChip';
+import { PriorityChip } from '@/components/submissions/shared/PriorityChip';
 
 const PRIORITY_BORDER: Record<SubmissionPriority, string> = {
   high: 'error.main',
@@ -50,17 +39,8 @@ export function SubmissionRow({ submission }: Props) {
               </Typography>
             </Box>
             <Stack direction="row" spacing={0.75} alignItems="center" sx={{ flexShrink: 0, pt: 0.25 }}>
-              <Chip
-                label={submission.priority}
-                color={PRIORITY_COLOR[submission.priority]}
-                size="small"
-                variant="outlined"
-              />
-              <Chip
-                label={submission.status.replace('_', ' ')}
-                color={STATUS_COLOR[submission.status]}
-                size="small"
-              />
+              <PriorityChip priority={submission.priority} />
+              <StatusChip status={submission.status} />
             </Stack>
           </Stack>
 
