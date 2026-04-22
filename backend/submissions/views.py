@@ -1,4 +1,4 @@
-from django.db.models import Count, OuterRef, Subquery
+from django.db.models import Count, Exists, OuterRef, Subquery
 from rest_framework import viewsets
 
 from submissions import models, serializers
@@ -12,7 +12,12 @@ class SubmissionViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = TotalPageNumberPagination
 
     def get_queryset(self):
-        queryset = super().get_queryset().select_related("broker", "company", "owner").order_by("-updated_at")
+        queryset = (
+            super()
+            .get_queryset()
+            .select_related("broker", "company", "owner")
+            .order_by("-updated_at")
+        )
 
         if self.action == "retrieve":
             queryset = queryset.prefetch_related("contacts", "documents", "notes")
@@ -20,6 +25,7 @@ class SubmissionViewSet(viewsets.ReadOnlyModelViewSet):
         if self.action == "list":
             latest_note = models.Note.objects.filter(submission_id=OuterRef("pk")).order_by("-created_at")
             queryset = queryset.annotate(
+                has_docs=Exists(models.Document.objects.filter(submission_id=OuterRef("pk"))),
                 document_count=Count("documents", distinct=True),
                 note_count=Count("notes", distinct=True),
                 latest_note_author=Subquery(latest_note.values("author_name")[:1]),

@@ -17,9 +17,9 @@ class SubmissionFilterSet(django_filters.FilterSet):
 
     def filter_has_documents(self, queryset, name, value):
         if value is True:
-            return queryset.filter(documents__isnull=False).distinct()
+            return queryset.filter(has_docs=True)
         if value is False:
-            return queryset.filter(documents__isnull=True)
+            return queryset.filter(has_docs=False)
         return queryset
 
     class Meta:
