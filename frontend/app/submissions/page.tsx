@@ -9,20 +9,11 @@ import { SubmissionsPagination } from '@/components/submissions/list/Submissions
 
 export default function SubmissionsPage() {
   const {
-    status,
-    brokerId,
-    companySearchInput,
-    hasDocuments,
     hasActiveFilters,
     page,
-    brokers,
     results,
     isEmpty,
     submissionsQuery,
-    onStatusChange,
-    onBrokerChange,
-    onCompanySearchChange,
-    onHasDocumentsChange,
     onClearFilters,
     onPreviousPage,
     onNextPage,
@@ -37,19 +28,7 @@ export default function SubmissionsPage() {
           </Typography>
         </Box>
 
-        <SubmissionFilters
-          status={status}
-          brokerId={brokerId}
-          companySearchInput={companySearchInput}
-          hasDocuments={hasDocuments}
-          hasActiveFilters={hasActiveFilters}
-          brokers={brokers}
-          onStatusChange={onStatusChange}
-          onBrokerChange={onBrokerChange}
-          onCompanySearchChange={onCompanySearchChange}
-          onHasDocumentsChange={onHasDocumentsChange}
-          onClearFilters={onClearFilters}
-        />
+        <SubmissionFilters />
 
         <Stack spacing={2}>
           <SubmissionsList
