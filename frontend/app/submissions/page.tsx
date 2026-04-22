@@ -9,12 +9,9 @@ import { SubmissionsPagination } from '@/components/submissions/list/Submissions
 
 export default function SubmissionsPage() {
   const {
-    hasActiveFilters,
     page,
-    results,
     isEmpty,
     submissionsQuery,
-    onClearFilters,
     onPreviousPage,
     onNextPage,
   } = useSubmissions();
@@ -31,14 +28,7 @@ export default function SubmissionsPage() {
         <SubmissionFilters />
 
         <Stack spacing={2}>
-          <SubmissionsList
-            isFetching={submissionsQuery.isFetching}
-            isError={submissionsQuery.isError}
-            isEmpty={isEmpty}
-            hasActiveFilters={hasActiveFilters}
-            results={results}
-            onClearFilters={onClearFilters}
-          />
+          <SubmissionsList />
           {submissionsQuery.data && !isEmpty && (
             <SubmissionsPagination
               page={page}

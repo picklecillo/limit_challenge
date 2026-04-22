@@ -2,19 +2,12 @@
 
 import { Button, Stack, Typography } from '@mui/material';
 
-import { SubmissionListItem } from '@/lib/types';
-import { SubmissionRow } from '@/components/submissionRow/SubmissionRow';
+import { useSubmissions } from './SubmissionsProvider';
+import { SubmissionRow } from './SubmissionRow';
 
-interface Props {
-  isFetching: boolean;
-  isError: boolean;
-  isEmpty: boolean;
-  hasActiveFilters: boolean;
-  results: SubmissionListItem[] | undefined;
-  onClearFilters: () => void;
-}
+export function SubmissionsList() {
+  const { isFetching, isError, isEmpty, hasActiveFilters, results, onClearFilters } = useSubmissions();
 
-export function SubmissionsList({ isFetching, isError, isEmpty, hasActiveFilters, results, onClearFilters }: Props) {
   return (
     <Stack spacing={1.5}>
       {isFetching ? (
