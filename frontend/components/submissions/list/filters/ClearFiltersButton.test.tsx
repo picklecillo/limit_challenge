@@ -2,19 +2,19 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { ClearFiltersButton } from './ClearFiltersButton';
-import { useSubmissions } from '../SubmissionsProvider';
+import { useSubmissionsFilters } from '../SubmissionsFilteringProvider';
 
-jest.mock('../SubmissionsProvider');
+jest.mock('../SubmissionsFilteringProvider');
 
-const mockUseSubmissions = useSubmissions as jest.MockedFunction<typeof useSubmissions>;
+const mockUseSubmissionsFilters = useSubmissionsFilters as jest.MockedFunction<typeof useSubmissionsFilters>;
 
 const defaultContext = {
-  hasActiveFilters: false,
-  onClearFilters: jest.fn(),
-} as unknown as ReturnType<typeof useSubmissions>;
+  filters: { hasActiveFilters: false },
+  actions: { onClearFilters: jest.fn() },
+} as unknown as ReturnType<typeof useSubmissionsFilters>;
 
 beforeEach(() => {
-  mockUseSubmissions.mockReturnValue(defaultContext);
+  mockUseSubmissionsFilters.mockReturnValue(defaultContext);
 });
 
 describe('ClearFiltersButton', () => {
@@ -29,14 +29,21 @@ describe('ClearFiltersButton', () => {
   });
 
   it('is enabled when hasActiveFilters is true', () => {
-    mockUseSubmissions.mockReturnValue({ ...defaultContext, hasActiveFilters: true });
+    mockUseSubmissionsFilters.mockReturnValue({
+      ...defaultContext,
+      filters: { ...defaultContext.filters, hasActiveFilters: true },
+    });
     render(<ClearFiltersButton />);
     expect(screen.getByRole('button', { name: 'Clear filters' })).toBeEnabled();
   });
 
   it('calls onClearFilters when clicked', async () => {
     const onClearFilters = jest.fn();
-    mockUseSubmissions.mockReturnValue({ ...defaultContext, hasActiveFilters: true, onClearFilters });
+    mockUseSubmissionsFilters.mockReturnValue({
+      ...defaultContext,
+      filters: { ...defaultContext.filters, hasActiveFilters: true },
+      actions: { ...defaultContext.actions, onClearFilters },
+    });
     render(<ClearFiltersButton />);
     await userEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
     expect(onClearFilters).toHaveBeenCalledTimes(1);

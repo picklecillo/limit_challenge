@@ -2,11 +2,13 @@
 
 import { Button, Stack, Typography } from '@mui/material';
 
-import { useSubmissions } from './SubmissionsProvider';
+import { useSubmissionsFilters } from './SubmissionsFilteringProvider';
+import { useSubmissionsData } from './SubmissionsProvider';
 import { SubmissionRow } from './SubmissionRow';
 
 export function SubmissionsList() {
-  const { isFetching, isError, isEmpty, hasActiveFilters, results, onClearFilters } = useSubmissions();
+  const { isFetching, isError, isEmpty, results } = useSubmissionsData();
+  const { filters, actions } = useSubmissionsFilters();
 
   return (
     <Stack spacing={1.5}>
@@ -17,12 +19,12 @@ export function SubmissionsList() {
       ) : isEmpty ? (
         <Stack spacing={1} alignItems="center" sx={{ py: 4 }}>
           <Typography color="text.secondary">
-            {hasActiveFilters
+            {filters.hasActiveFilters
               ? 'No submissions match your filters.'
               : 'No submissions yet.'}
           </Typography>
-          {hasActiveFilters && (
-            <Button size="small" variant="outlined" onClick={onClearFilters}>
+          {filters.hasActiveFilters && (
+            <Button size="small" variant="outlined" onClick={actions.onClearFilters}>
               Clear filters
             </Button>
           )}

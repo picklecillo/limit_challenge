@@ -2,31 +2,33 @@
 
 import { Button, Stack, Typography } from '@mui/material';
 
-import { useSubmissions } from './SubmissionsProvider';
+import { useSubmissionsFilters } from './SubmissionsFilteringProvider';
+import { useSubmissionsData } from './SubmissionsProvider';
 
 export function SubmissionsPagination() {
-  const { page, isEmpty, submissionsQuery, onPreviousPage, onNextPage } = useSubmissions();
+  const { isEmpty, isFetching, totalPages, hasPreviousPage, hasNextPage } = useSubmissionsData();
+  const { filters, actions } = useSubmissionsFilters();
 
-  if (!submissionsQuery.data || isEmpty) return null;
+  if (totalPages === 0 || isEmpty) return null;
 
   return (
     <Stack direction="row" spacing={2} alignItems="center" justifyContent="flex-end">
       <Typography variant="body2" color="text.secondary">
-        Page {page} of {submissionsQuery.data.totalPages}
+        Page {filters.page} of {totalPages}
       </Typography>
       <Button
         size="small"
         variant="outlined"
-        disabled={!submissionsQuery.data.previous || submissionsQuery.isFetching}
-        onClick={onPreviousPage}
+        disabled={!hasPreviousPage || isFetching}
+        onClick={actions.onPreviousPage}
       >
         Previous
       </Button>
       <Button
         size="small"
         variant="outlined"
-        disabled={!submissionsQuery.data.next || submissionsQuery.isFetching}
-        onClick={onNextPage}
+        disabled={!hasNextPage || isFetching}
+        onClick={actions.onNextPage}
       >
         Next
       </Button>

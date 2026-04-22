@@ -2,19 +2,19 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { StatusFilter } from './StatusFilter';
-import { useSubmissions } from '../SubmissionsProvider';
+import { useSubmissionsFilters } from '../SubmissionsFilteringProvider';
 
-jest.mock('../SubmissionsProvider');
+jest.mock('../SubmissionsFilteringProvider');
 
-const mockUseSubmissions = useSubmissions as jest.MockedFunction<typeof useSubmissions>;
+const mockUseSubmissionsFilters = useSubmissionsFilters as jest.MockedFunction<typeof useSubmissionsFilters>;
 
 const defaultContext = {
-  status: '' as const,
-  onStatusChange: jest.fn(),
-} as unknown as ReturnType<typeof useSubmissions>;
+  filters: { status: '' as const },
+  actions: { onStatusChange: jest.fn() },
+} as unknown as ReturnType<typeof useSubmissionsFilters>;
 
 beforeEach(() => {
-  mockUseSubmissions.mockReturnValue(defaultContext);
+  mockUseSubmissionsFilters.mockReturnValue(defaultContext);
 });
 
 describe('StatusFilter', () => {
@@ -35,7 +35,10 @@ describe('StatusFilter', () => {
 
   it('calls onStatusChange with selected value', async () => {
     const onStatusChange = jest.fn();
-    mockUseSubmissions.mockReturnValue({ ...defaultContext, onStatusChange });
+    mockUseSubmissionsFilters.mockReturnValue({
+      ...defaultContext,
+      actions: { ...defaultContext.actions, onStatusChange },
+    });
     render(<StatusFilter />);
     await userEvent.click(screen.getByLabelText('Status'));
     await userEvent.click(screen.getByRole('option', { name: 'Closed' }));
@@ -43,7 +46,10 @@ describe('StatusFilter', () => {
   });
 
   it('reflects current status value', async () => {
-    mockUseSubmissions.mockReturnValue({ ...defaultContext, status: 'in_review' });
+    mockUseSubmissionsFilters.mockReturnValue({
+      ...defaultContext,
+      filters: { ...defaultContext.filters, status: 'in_review' },
+    });
     render(<StatusFilter />);
     expect(screen.getByLabelText('Status')).toHaveTextContent('In Review');
   });

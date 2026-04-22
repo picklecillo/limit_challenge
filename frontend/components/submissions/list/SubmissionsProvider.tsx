@@ -1,165 +1,64 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { createContext, useContext, useMemo } from 'react';
 
-import { useBrokerOptions } from '@/lib/hooks/useBrokerOptions';
 import { useSubmissionsList } from '@/lib/hooks/useSubmissions';
-import { Broker, PaginatedResponse, SubmissionListItem, SubmissionStatus } from '@/lib/types';
-import { UseQueryResult } from '@tanstack/react-query';
+import { SubmissionListItem } from '@/lib/types';
 
-interface SubmissionsContextValue {
-  status: SubmissionStatus | '';
-  brokerId: string;
-  companySearchInput: string;
-  hasDocuments: boolean;
-  hasActiveFilters: boolean;
-  page: number;
-  brokers: Broker[];
+import { useSubmissionsFilters } from './SubmissionsFilteringProvider';
+
+interface SubmissionsDataContextValue {
   results: SubmissionListItem[] | undefined;
+  isFetching: boolean;
+  isError: boolean;
   isEmpty: boolean;
-  submissionsQuery: UseQueryResult<PaginatedResponse<SubmissionListItem>>;
-  onStatusChange: (value: string) => void;
-  onBrokerChange: (value: string) => void;
-  onCompanySearchChange: (value: string) => void;
-  onHasDocumentsChange: (value: boolean) => void;
-  onClearFilters: () => void;
-  onPreviousPage: () => void;
-  onNextPage: () => void;
+  totalPages: number;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
 }
 
-const SubmissionsContext = createContext<SubmissionsContextValue | null>(null);
+const SubmissionsDataContext = createContext<SubmissionsDataContextValue | null>(null);
 
-export function useSubmissions() {
-  const ctx = useContext(SubmissionsContext);
-  if (!ctx) throw new Error('useSubmissions must be used within SubmissionsProvider');
+export function useSubmissionsData() {
+  const ctx = useContext(SubmissionsDataContext);
+  if (!ctx) throw new Error('useSubmissionsData must be used within SubmissionsProvider');
   return ctx;
 }
 
 export function SubmissionsProvider({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const { filters } = useSubmissionsFilters();
 
-  const status = (searchParams.get('status') ?? '') as SubmissionStatus | '';
-  const brokerId = searchParams.get('brokerId') ?? '';
-  const companySearch = searchParams.get('companySearch') ?? '';
-  const hasDocuments = searchParams.get('hasDocuments') === 'true';
-  const page = parseInt(searchParams.get('page') ?? '1', 10);
-
-  const [companySearchInput, setCompanySearchInput] = useState(companySearch);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    setCompanySearchInput(companySearch);
-  }, [companySearch]);
-
-  const setFilter = useCallback(
-    (updates: Record<string, string>, resetPage = true) => {
-      const params = new URLSearchParams(searchParams.toString());
-      for (const [key, value] of Object.entries(updates)) {
-        if (value) params.set(key, value);
-        else params.delete(key);
-      }
-      if (resetPage) params.delete('page');
-      router.replace(`${pathname}?${params.toString()}`);
-    },
-    [searchParams, pathname, router],
-  );
-
-  const onStatusChange = useCallback((value: string) => setFilter({ status: value }), [setFilter]);
-  const onBrokerChange = useCallback((value: string) => setFilter({ brokerId: value }), [setFilter]);
-  const onHasDocumentsChange = useCallback(
-    (value: boolean) => setFilter({ hasDocuments: value ? 'true' : '' }),
-    [setFilter],
-  );
-  const onCompanySearchChange = useCallback(
-    (value: string) => {
-      setCompanySearchInput(value);
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => {
-        setFilter({ companySearch: value });
-      }, 300);
-    },
-    [setFilter],
-  );
-  const onClearFilters = useCallback(() => {
-    setCompanySearchInput('');
-    router.replace(pathname);
-  }, [router, pathname]);
-
-  const onPreviousPage = useCallback(
-    () => setFilter({ page: String(page - 1) }, false),
-    [setFilter, page],
-  );
-  
-  const onNextPage = useCallback(
-    () => setFilter({ page: String(page + 1) }, false),
-    [setFilter, page],
-  );
-
-  const filters = useMemo(
+  const queryFilters = useMemo(
     () => ({
-      status: status || undefined,
-      brokerId: brokerId || undefined,
-      companySearch: companySearch || undefined,
-      hasDocuments: hasDocuments || undefined,
-      page,
+      status: filters.status || undefined,
+      brokerId: filters.brokerId || undefined,
+      companySearch: filters.companySearch || undefined,
+      hasDocuments: filters.hasDocuments || undefined,
+      page: filters.page,
     }),
-    [status, brokerId, companySearch, hasDocuments, page],
+    [filters.status, filters.brokerId, filters.companySearch, filters.hasDocuments, filters.page],
   );
 
-  const submissionsQuery = useSubmissionsList(filters);
-  const brokerQuery = useBrokerOptions();
+  const query = useSubmissionsList(queryFilters);
+  const results = query.data?.results;
+  const isEmpty = !query.isFetching && results?.length === 0;
 
-  const hasActiveFilters = !!(status || brokerId || companySearch || hasDocuments);
-  const results = submissionsQuery.data?.results;
-  const isEmpty = !submissionsQuery.isFetching && results?.length === 0;
-
-  const value = useMemo<SubmissionsContextValue>(
+  const value = useMemo<SubmissionsDataContextValue>(
     () => ({
-      status,
-      brokerId,
-      companySearchInput,
-      hasDocuments,
-      hasActiveFilters,
-      page,
-      brokers: brokerQuery.data ?? [],
       results,
-      isEmpty,
-      submissionsQuery,
-      onStatusChange,
-      onBrokerChange,
-      onCompanySearchChange,
-      onHasDocumentsChange,
-      onClearFilters,
-      onPreviousPage,
-      onNextPage,
+      isFetching: query.isFetching,
+      isError: query.isError,
+      isEmpty: isEmpty ?? false,
+      totalPages: query.data?.totalPages ?? 0,
+      hasPreviousPage: !!query.data?.previous,
+      hasNextPage: !!query.data?.next,
     }),
-    [
-      status,
-      brokerId,
-      companySearchInput,
-      hasDocuments,
-      hasActiveFilters,
-      page,
-      brokerQuery.data,
-      results,
-      isEmpty,
-      submissionsQuery,
-      onStatusChange,
-      onBrokerChange,
-      onCompanySearchChange,
-      onHasDocumentsChange,
-      onClearFilters,
-      onPreviousPage,
-      onNextPage,
-    ],
+    [results, query.isFetching, query.isError, isEmpty, query.data],
   );
 
   return (
-    <SubmissionsContext.Provider value={value}>
+    <SubmissionsDataContext.Provider value={value}>
       {children}
-    </SubmissionsContext.Provider>
+    </SubmissionsDataContext.Provider>
   );
 }

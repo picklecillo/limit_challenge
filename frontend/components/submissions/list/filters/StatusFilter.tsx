@@ -1,7 +1,7 @@
 import { MenuItem, TextField } from '@mui/material';
 
 import { SubmissionStatus } from '@/lib/types';
-import { useSubmissions } from '../SubmissionsProvider';
+import { useSubmissionsFilters } from '../SubmissionsFilteringProvider';
 
 const STATUS_OPTIONS: { label: string; value: SubmissionStatus | '' }[] = [
   { label: 'All statuses', value: '' },
@@ -12,14 +12,14 @@ const STATUS_OPTIONS: { label: string; value: SubmissionStatus | '' }[] = [
 ];
 
 export function StatusFilter() {
-  const { status, onStatusChange } = useSubmissions();
+  const { filters, actions } = useSubmissionsFilters();
 
   return (
     <TextField
       select
       label="Status"
-      value={status}
-      onChange={(event) => onStatusChange(event.target.value)}
+      value={filters.status}
+      onChange={(event) => actions.onStatusChange(event.target.value)}
       fullWidth
     >
       {STATUS_OPTIONS.map((option) => (

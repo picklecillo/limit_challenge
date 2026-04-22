@@ -1,16 +1,16 @@
 import { Checkbox, FormControlLabel } from '@mui/material';
 
-import { useSubmissions } from '../SubmissionsProvider';
+import { useSubmissionsFilters } from '../SubmissionsFilteringProvider';
 
 export function HasDocumentsFilter() {
-  const { hasDocuments, onHasDocumentsChange } = useSubmissions();
+  const { filters, actions } = useSubmissionsFilters();
 
   return (
     <FormControlLabel
       control={
         <Checkbox
-          checked={hasDocuments}
-          onChange={(event) => onHasDocumentsChange(event.target.checked)}
+          checked={filters.hasDocuments}
+          onChange={(event) => actions.onHasDocumentsChange(event.target.checked)}
         />
       }
       label="Has documents"

@@ -1,16 +1,18 @@
 import { MenuItem, TextField } from '@mui/material';
 
-import { useSubmissions } from '../SubmissionsProvider';
+import { useBrokerOptions } from '@/lib/hooks/useBrokerOptions';
+import { useSubmissionsFilters } from '../SubmissionsFilteringProvider';
 
 export function BrokerFilter() {
-  const { brokerId, brokers, onBrokerChange } = useSubmissions();
+  const { filters, actions } = useSubmissionsFilters();
+  const { data: brokers = [] } = useBrokerOptions();
 
   return (
     <TextField
       select
       label="Broker"
-      value={brokerId}
-      onChange={(event) => onBrokerChange(event.target.value)}
+      value={filters.brokerId}
+      onChange={(event) => actions.onBrokerChange(event.target.value)}
       fullWidth
     >
       <MenuItem value="">All brokers</MenuItem>

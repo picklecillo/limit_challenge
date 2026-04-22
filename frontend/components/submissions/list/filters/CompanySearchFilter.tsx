@@ -1,15 +1,15 @@
 import { TextField } from '@mui/material';
 
-import { useSubmissions } from '../SubmissionsProvider';
+import { useSubmissionsFilters } from '../SubmissionsFilteringProvider';
 
 export function CompanySearchFilter() {
-  const { companySearchInput, onCompanySearchChange } = useSubmissions();
+  const { filters, actions } = useSubmissionsFilters();
 
   return (
     <TextField
       label="Company search"
-      value={companySearchInput}
-      onChange={(event) => onCompanySearchChange(event.target.value)}
+      value={filters.companySearchInput}
+      onChange={(event) => actions.onCompanySearchChange(event.target.value)}
       fullWidth
     />
   );
