@@ -32,7 +32,7 @@ export default function SubmissionDetailPage() {
         </Box>
 
         {isFetching && (
-          <Typography color="text.secondary">Loading…</Typography>
+          <Typography color="text.secondary" textAlign="center">Loading…</Typography>
         )}
 
         {isError && (

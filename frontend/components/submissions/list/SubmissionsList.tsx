@@ -13,7 +13,7 @@ export function SubmissionsList() {
   return (
     <Stack spacing={1.5}>
       {isFetching ? (
-        <Typography color="text.secondary">Loading...</Typography>
+        <Typography color="text.secondary" textAlign="center">Loading...</Typography>
       ) : isError ? (
         <Typography color="error">Failed to load submissions.</Typography>
       ) : isEmpty ? (
