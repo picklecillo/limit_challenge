@@ -16,6 +16,7 @@ test-frontend:
 	cd frontend && npm run test -- --ci
 
 init:
+	mkdir -p backend/data
 	docker compose up --build -d backend
 	@echo "Waiting for backend..."
 	@until docker compose exec backend python manage.py check --database default > /dev/null 2>&1; do sleep 2; done
