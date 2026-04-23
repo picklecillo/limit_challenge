@@ -14,6 +14,7 @@ class SubmissionFilterSet(django_filters.FilterSet):
     brokerId = django_filters.NumberFilter(field_name="broker_id")
     companySearch = django_filters.CharFilter(field_name="company__legal_name", lookup_expr="icontains")
     hasDocuments = django_filters.BooleanFilter(method="filter_has_documents")
+    createdFrom = django_filters.DateFilter(field_name="created_at", lookup_expr="date__gte")
 
     def filter_has_documents(self, queryset, name, value):
         if value is True:
@@ -24,5 +25,5 @@ class SubmissionFilterSet(django_filters.FilterSet):
 
     class Meta:
         model = models.Submission
-        fields = ["status", "broker_id", "company__legal_name", "hasDocuments"]
+        fields = ["status", "broker_id", "company__legal_name", "hasDocuments", "created_at"]
 

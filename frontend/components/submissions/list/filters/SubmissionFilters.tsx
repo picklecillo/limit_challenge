@@ -4,6 +4,7 @@ import { StatusFilter } from './StatusFilter';
 import { BrokerFilter } from './BrokerFilter';
 import { CompanySearchFilter } from './CompanySearchFilter';
 import { HasDocumentsFilter } from './HasDocumentsFilter';
+import { CreatedFromFilter } from './CreatedFromFilter';
 import { ClearFiltersButton } from './ClearFiltersButton';
 
 export function SubmissionFilters() {
@@ -15,6 +16,7 @@ export function SubmissionFilters() {
           <BrokerFilter />
           <CompanySearchFilter />
           <HasDocumentsFilter />
+          <CreatedFromFilter />
           <ClearFiltersButton />
         </Stack>
       </CardContent>

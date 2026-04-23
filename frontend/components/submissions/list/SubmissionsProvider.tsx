@@ -34,9 +34,10 @@ export function SubmissionsProvider({ children }: { children: React.ReactNode })
       brokerId: filters.brokerId || undefined,
       companySearch: filters.companySearch || undefined,
       hasDocuments: filters.hasDocuments || undefined,
+      createdFrom: filters.createdFrom || undefined,
       page: filters.page,
     }),
-    [filters.status, filters.brokerId, filters.companySearch, filters.hasDocuments, filters.page],
+    [filters.status, filters.brokerId, filters.companySearch, filters.hasDocuments, filters.createdFrom, filters.page],
   );
 
   const query = useSubmissionsList(queryFilters);

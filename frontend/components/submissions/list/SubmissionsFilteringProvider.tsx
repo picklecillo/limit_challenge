@@ -11,6 +11,7 @@ interface FilterState {
   companySearch: string;
   companySearchInput: string;
   hasDocuments: boolean;
+  createdFrom: string;
   hasActiveFilters: boolean;
   page: number;
 }
@@ -20,6 +21,7 @@ interface FilterActions {
   onBrokerChange: (value: string) => void;
   onCompanySearchChange: (value: string) => void;
   onHasDocumentsChange: (value: boolean) => void;
+  onCreatedFromChange: (value: string) => void;
   onClearFilters: () => void;
   onPreviousPage: () => void;
   onNextPage: () => void;
@@ -47,6 +49,7 @@ export function SubmissionsFilteringProvider({ children }: { children: React.Rea
   const brokerId = searchParams.get('brokerId') ?? '';
   const companySearch = searchParams.get('companySearch') ?? '';
   const hasDocuments = searchParams.get('hasDocuments') === 'true';
+  const createdFrom = searchParams.get('createdFrom') ?? '';
   const page = parseInt(searchParams.get('page') ?? '1', 10);
 
   const [companySearchInput, setCompanySearchInput] = useState(companySearch);
@@ -71,6 +74,7 @@ export function SubmissionsFilteringProvider({ children }: { children: React.Rea
 
   const onStatusChange = useCallback((value: string) => setFilter({ status: value }), [setFilter]);
   const onBrokerChange = useCallback((value: string) => setFilter({ brokerId: value }), [setFilter]);
+  const onCreatedFromChange = useCallback((value: string) => setFilter({ createdFrom: value }), [setFilter]);
   const onHasDocumentsChange = useCallback(
     (value: boolean) => setFilter({ hasDocuments: value ? 'true' : '' }),
     [setFilter],
@@ -99,11 +103,11 @@ export function SubmissionsFilteringProvider({ children }: { children: React.Rea
     [setFilter, page],
   );
 
-  const hasActiveFilters = !!(status || brokerId || companySearch || hasDocuments);
+  const hasActiveFilters = !!(status || brokerId || companySearch || hasDocuments || createdFrom);
 
   const filters = useMemo<FilterState>(
-    () => ({ status, brokerId, companySearch, companySearchInput, hasDocuments, hasActiveFilters, page }),
-    [status, brokerId, companySearch, companySearchInput, hasDocuments, hasActiveFilters, page],
+    () => ({ status, brokerId, companySearch, companySearchInput, hasDocuments, createdFrom, hasActiveFilters, page }),
+    [status, brokerId, companySearch, companySearchInput, hasDocuments, createdFrom, hasActiveFilters, page],
   );
 
   const actions = useMemo<FilterActions>(
@@ -112,6 +116,7 @@ export function SubmissionsFilteringProvider({ children }: { children: React.Rea
       onBrokerChange,
       onCompanySearchChange,
       onHasDocumentsChange,
+      onCreatedFromChange,
       onClearFilters,
       onPreviousPage,
       onNextPage,
@@ -121,6 +126,7 @@ export function SubmissionsFilteringProvider({ children }: { children: React.Rea
       onBrokerChange,
       onCompanySearchChange,
       onHasDocumentsChange,
+      onCreatedFromChange,
       onClearFilters,
       onPreviousPage,
       onNextPage,
